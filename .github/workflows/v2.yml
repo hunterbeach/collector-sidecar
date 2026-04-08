@@ -34,9 +34,6 @@ jobs:
       - name: "Build cross-platform binaries"
         run: "make build-all"
 
-      - name: "Fetch collector binaries"
-        run: "bash dist/fetch_collectors.sh"
-
       - name: "Build Windows MSI package"
         run: "make package-windows-msi-amd64"
 
