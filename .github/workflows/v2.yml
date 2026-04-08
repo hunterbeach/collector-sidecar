@@ -45,17 +45,8 @@ jobs:
           TIMESTAMP: "${{ env.timestamp }}"
         run: "nfpm package -f dist/v2/nfpm.yaml -p deb"
 
-      - name: "Upload build artifacts to S3"
-        env:
-          AWS_DEFAULT_REGION: "eu-west-1"
-          AWS_ACCESS_KEY_ID: "${{ secrets.AWS_S3_SNAPSHOTS_ACCESS_KEY_ID }}"
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SNAPSHOTS_SECRET_ACCESS_KEY }}
-          AWS_S3_BUCKET: "${{ secrets.AWS_S3_SNAPSHOTS_BUCKET }}"
-          TIMESTAMP: "${{ env.timestamp }}"
-        run: |
-          printf -- "## Artifacts\n\n" >> "$GITHUB_STEP_SUMMARY"
-
-          for file in $(find . -maxdepth 1 -name 'graylog-collector*' -type f | sort -V); do
-            aws s3 cp --no-progress "$file" "s3://${AWS_S3_BUCKET}/sidecar/v2/${TIMESTAMP}/"
-            printf -- "- https://downloads.graylog.org/snapshots/sidecar/v2/%s/%s\n" "$TIMESTAMP" "$(basename "$file")" >> "$GITHUB_STEP_SUMMARY"
-          done
+      - name: "Upload build artifacts"
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: "graylog-sidecar-${{ env.timestamp }}"
+          path: "graylog-collector*"
