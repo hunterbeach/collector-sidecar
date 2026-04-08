@@ -21,32 +21,25 @@ jobs:
       - name: "Setup Go environment"
         uses: "actions/setup-go@v6"
         with:
-          go-version: "1.26"
+          go-version: "1.25"
+
+      - name: "Install cross-compilation toolchains"
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y gcc-multilib gcc-mingw-w64
 
       - name: "Run tests"
-        run: "make v2test"
+        run: "make test"
 
-      - name: "Build binaries"
-        run: "make v2all"
+      - name: "Build cross-platform binaries"
+        run: "make build-all"
 
       - name: "Setup env"
         run: |
           echo "timestamp=$(date '+%F-%H-%M-%S')" | tee -a "$GITHUB_ENV"
 
-      - name: "Setup nFPM"
-        env:
-          GH_TOKEN: "${{ github.token }}"
-        run: |
-          gh release download --repo goreleaser/nfpm -p "*amd64.deb" -O nfpm.deb
-          sudo apt-get install -y ./nfpm.deb
-
-      - name: "Build packages"
-        env:
-          TIMESTAMP: "${{ env.timestamp }}"
-        run: "nfpm package -f dist/v2/nfpm.yaml -p deb"
-
       - name: "Upload build artifacts"
         uses: "actions/upload-artifact@v4"
         with:
           name: "graylog-sidecar-${{ env.timestamp }}"
-          path: "graylog-collector*"
+          path: "build/"
